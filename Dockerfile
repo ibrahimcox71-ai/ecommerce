@@ -11,8 +11,8 @@ RUN apt-get update && apt-get install -y \
     sqlite3 \
     zip \
     unzip \
-    git \
     curl \
+    dos2unix \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_mysql pdo_sqlite gd zip bcmath
 
@@ -26,20 +26,22 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/conf-ava
 
 WORKDIR /var/www/html
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Copy project files
+# Copy pre-built project files including local vendor directory
 COPY . .
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
+# Ensure SQLite file exists
+RUN mkdir -p /var/www/html/database \
+    && touch /var/www/html/database/database.sqlite
 
-# Make entrypoint script executable
-RUN chmod +x /var/www/html/docker-entrypoint.sh
+# Set correct permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
+
+# Convert CRLF to LF for entrypoint script
+RUN dos2unix /var/www/html/docker-entrypoint.sh \
+    && chmod +x /var/www/html/docker-entrypoint.sh
 
 EXPOSE 80
 
-# Use Entrypoint Script
 ENTRYPOINT ["/var/www/html/docker-entrypoint.sh"]
 CMD ["apache2-foreground"]
