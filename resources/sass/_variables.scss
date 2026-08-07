@@ -1,0 +1,30 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// E-COMMERCE DESIGN TOKENS — Bootstrap Theme Overrides
+// Signature Vibrant Orange + Clean Neutral Dark Gray
+// Loaded BEFORE `bootstrap/scss/bootstrap` in app.scss so all `!default`
+// Bootstrap variables pick up these values (drives --bs-primary, --bs-body-bg,
+// buttons, links, borders, etc. across the whole frontend).
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── Brand & Accent ──────────────────────────────────────────────────────────
+$primary:          #F57224;   // Signature Vibrant Orange (Daraz-style CTA)
+$primary-hover:    #D0520A;   // Primary hover / active state
+$secondary:        #212121;   // Charcoal Black (header, text, dark surfaces)
+$secondary-dark:   #171717;   // Deep charcoal for pressed / darker surfaces
+$accent:           #F57224;   // Flash Sale accent (same family, no harsh red)
+$accent-hover:     #D0520A;
+
+// ─── Neutral & Surfaces ──────────────────────────────────────────────────────
+$body-bg:          #F5F5F5;   // Clean light slate for page body
+$body-color:       #212121;   // Charcoal body text
+$border-color:     #E0E0E0;   // Subtle card / divider borders
+
+// ─── Semantic (unchanged semantics, tuned to palette) ────────────────────────
+$success:          #10B981;
+$warning:          #F59E0B;
+$danger:           #EF4444;
+$info:             #3B82F6;
+
+// ─── Bootstrap Behavior ──────────────────────────────────────────────────────
+$enable-shadows:   true;
+// Link colors derive from $primary automatically (Bootstrap default).
