@@ -43,10 +43,12 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts --prefer-dist
 # Build Frontend Assets (Vite)
 RUN npm install && npm run build
 
-# Ensure SQLite file exists and permissions are set
+# Ensure SQLite file exists, Link Storage & permissions are set
 RUN mkdir -p /var/www/html/database \
     && touch /var/www/html/database/database.sqlite \
-    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database \
+    && php artisan storage:link || true \
+    && php artisan config:clear || true \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database /var/www/html/public \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
 
 EXPOSE 80
