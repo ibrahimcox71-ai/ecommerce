@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_mysql pdo_sqlite gd zip bcmath
 
-# Install Composer
+# Install Composer directly inside Docker
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Enable Apache Mod_Rewrite
@@ -29,13 +29,13 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/conf-ava
 
 WORKDIR /var/www/html
 
-# Copy application files (excluding vendor via .dockerignore)
+# Copy application files
 COPY . .
 
-# Prevent Composer memory limits during build on Render
+# Unlimited memory limit for Composer during build
 ENV COMPOSER_MEMORY_LIMIT=-1
 
-# Run Composer Install cleanly inside Docker container
+# Fresh installation of production dependencies inside Docker container
 RUN composer install --no-dev --optimize-autoloader --no-scripts --prefer-dist
 
 # Ensure SQLite file exists and permissions are set
