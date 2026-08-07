@@ -1,4 +1,4 @@
-# Base Image: PHP 8.2 + Apache
+# Base Image
 FROM php:8.2-apache
 
 # Install system dependencies & PHP extensions required for Laravel & SQLite
@@ -12,21 +12,31 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     curl \
+    git \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_mysql pdo_sqlite gd zip bcmath
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Enable Apache Mod_Rewrite
 RUN a2enmod rewrite
 
-# Set Apache Document Root to Laravel public directory
+# Set Apache Document Root
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/conf-available/*.conf
 
 WORKDIR /var/www/html
 
-# Copy pre-built project files including vendor
+# Copy application files (excluding vendor via .dockerignore)
 COPY . .
+
+# Prevent Composer memory limits during build on Render
+ENV COMPOSER_MEMORY_LIMIT=-1
+
+# Run Composer Install cleanly inside Docker container
+RUN composer install --no-dev --optimize-autoloader --no-scripts --prefer-dist
 
 # Ensure SQLite file exists and permissions are set
 RUN mkdir -p /var/www/html/database \
@@ -36,5 +46,4 @@ RUN mkdir -p /var/www/html/database \
 
 EXPOSE 80
 
-# Direct Apache startup command without entrypoint script
 CMD ["apache2-foreground"]
