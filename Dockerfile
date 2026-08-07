@@ -1,7 +1,7 @@
 # Base Image
 FROM php:8.2-apache
 
-# Install system dependencies & PHP extensions required for Laravel & SQLite
+# Install system dependencies, Node.js & PHP extensions
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -13,6 +13,8 @@ RUN apt-get update && apt-get install -y \
     unzip \
     curl \
     git \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_mysql pdo_sqlite gd zip bcmath
 
@@ -35,8 +37,11 @@ COPY . .
 # Unlimited memory limit for Composer during build
 ENV COMPOSER_MEMORY_LIMIT=-1
 
-# Fresh installation of production dependencies inside Docker container
+# Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-scripts --prefer-dist
+
+# Build Frontend Assets (Vite)
+RUN npm install && npm run build
 
 # Ensure SQLite file exists and permissions are set
 RUN mkdir -p /var/www/html/database \
