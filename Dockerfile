@@ -12,7 +12,6 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     curl \
-    dos2unix \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_mysql pdo_sqlite gd zip bcmath
 
@@ -26,22 +25,16 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/conf-ava
 
 WORKDIR /var/www/html
 
-# Copy pre-built project files including local vendor directory
+# Copy pre-built project files including vendor
 COPY . .
 
-# Ensure SQLite file exists
+# Ensure SQLite file exists and permissions are set
 RUN mkdir -p /var/www/html/database \
-    && touch /var/www/html/database/database.sqlite
-
-# Set correct permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database \
+    && touch /var/www/html/database/database.sqlite \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
-
-# Convert CRLF to LF for entrypoint script
-RUN dos2unix /var/www/html/docker-entrypoint.sh \
-    && chmod +x /var/www/html/docker-entrypoint.sh
 
 EXPOSE 80
 
-ENTRYPOINT ["/var/www/html/docker-entrypoint.sh"]
+# Direct Apache startup command without entrypoint script
 CMD ["apache2-foreground"]
